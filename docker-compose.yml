@@ -2,17 +2,17 @@ version: '3.8'
 
 services:
   web:
+    image: ghcr.io/socrateschieregato/news:latest
     build: .
     command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
     ports:
       - "8000:8000"
-    environment:
-      - DEBUG=1
-      - DJANGO_SETTINGS_MODULE=jota_news.settings
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/jota_news
-      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
       - db
       - redis
@@ -21,12 +21,8 @@ services:
     image: postgres:15
     volumes:
       - postgres_data:/var/lib/postgresql/data/
-    environment:
-      - POSTGRES_DB=jota_news
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5432:5432"
+    env_file:
+      - .env
 
   redis:
     image: redis:7
@@ -34,32 +30,17 @@ services:
       - "6379:6379"
 
   celery:
-    build: .
-    command: celery -A jota_news worker -l INFO
+    image: ghcr.io/socrateschieregato/news:latest
+    command: celery -A jota_news worker -l info
     volumes:
       - .:/app
-    environment:
-      - DEBUG=1
-      - DJANGO_SETTINGS_MODULE=jota_news.settings
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/jota_news
-      - REDIS_URL=redis://redis:6379/0
-    depends_on:
-      - web
-      - redis
-
-  celery-beat:
-    build: .
-    command: celery -A jota_news beat -l INFO
-    volumes:
-      - .:/app
-    environment:
-      - DEBUG=1
-      - DJANGO_SETTINGS_MODULE=jota_news.settings
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/jota_news
-      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - .env
     depends_on:
       - web
       - redis
 
 volumes:
-  postgres_data: 
+  postgres_data:
+  static_volume:
+  media_volume: 
