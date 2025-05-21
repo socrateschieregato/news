@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  web:
+    image: ghcr.io/socrateschieregato/news:latest
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - db
+      - redis
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - .env
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+
+  celery:
+    image: ghcr.io/socrateschieregato/news:latest
+    command: celery -A jota_news worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume: 
