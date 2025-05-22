@@ -9,40 +9,42 @@ class TestNewsAPI:
     def test_list_news_unauthorized(self, api_client):
         url = reverse('news-list')
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 0
 
-    def test_list_news_authorized(self, api_client, regular_user):
+    def test_list_news_authorized(self, api_client, regular_user, news_item):
         api_client.force_authenticate(user=regular_user)
         url = reverse('news-list')
         response = api_client.get(url)
         assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
 
-    def test_create_news_editor(self, api_client, editor_user, category):
+    def test_create_news_editor(self, api_client, editor_user, vertical):
         api_client.force_authenticate(user=editor_user)
         url = reverse('news-list')
         data = {
             'title': 'Test News',
             'subtitle': 'Test Subtitle',
             'content': 'Test Content',
-            'status': 'draft',
+            'access_type': 'PUBLIC',
             'is_pro': False,
-            'category_id': category.id
+            'vertical_id': vertical.id
         }
         response = api_client.post(url, data)
         assert response.status_code == status.HTTP_201_CREATED
         assert News.objects.count() == 1
         assert News.objects.first().author == editor_user
 
-    def test_create_news_regular_user(self, api_client, regular_user, category):
+    def test_create_news_regular_user(self, api_client, regular_user, vertical):
         api_client.force_authenticate(user=regular_user)
         url = reverse('news-list')
         data = {
             'title': 'Test News',
             'subtitle': 'Test Subtitle',
             'content': 'Test Content',
-            'status': 'draft',
+            'access_type': 'PUBLIC',
             'is_pro': False,
-            'category_id': category.id
+            'vertical_id': vertical.id
         }
         response = api_client.post(url, data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -56,9 +58,9 @@ class TestNewsAPI:
             'title': 'Updated Title',
             'subtitle': news_item.subtitle,
             'content': news_item.content,
-            'status': news_item.status,
+            'access_type': news_item.access_type,
             'is_pro': news_item.is_pro,
-            'category_id': news_item.category.id
+            'vertical_id': news_item.vertical.id
         }
         response = api_client.put(url, data)
         assert response.status_code == status.HTTP_200_OK
@@ -72,9 +74,9 @@ class TestNewsAPI:
             'title': 'Updated Title',
             'subtitle': news_item.subtitle,
             'content': news_item.content,
-            'status': news_item.status,
+            'access_type': news_item.access_type,
             'is_pro': news_item.is_pro,
-            'category_id': news_item.category.id
+            'vertical_id': news_item.vertical.id
         }
         response = api_client.put(url, data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -95,10 +97,50 @@ class TestNewsAPI:
         assert response.status_code == status.HTTP_403_FORBIDDEN
         assert News.objects.count() == 1
 
-    def test_pro_content_access(self, api_client, regular_user, news_item):
+    def test_pro_content_access_regular_user(self, api_client, regular_user, news_item):
         news_item.is_pro = True
+        news_item.access_type = 'PRO'
         news_item.save()
         api_client.force_authenticate(user=regular_user)
         url = reverse('news-detail', kwargs={'pk': news_item.pk})
         response = api_client.get(url)
-        assert response.status_code == status.HTTP_404_NOT_FOUND 
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    def test_pro_content_access_pro_user(self, api_client, pro_user, news_item):
+        news_item.is_pro = True
+        news_item.access_type = 'PRO'
+        news_item.save()
+        api_client.force_authenticate(user=pro_user)
+        url = reverse('news-detail', kwargs={'pk': news_item.pk})
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_pro_content_access_admin(self, api_client, admin_user, news_item):
+        news_item.is_pro = True
+        news_item.access_type = 'PRO'
+        news_item.save()
+        api_client.force_authenticate(user=admin_user)
+        url = reverse('news-detail', kwargs={'pk': news_item.pk})
+        response = api_client.get(url)
+        assert response.status_code == status.HTTP_200_OK
+
+    def test_list_news_with_pro_content(self, api_client, regular_user, pro_user, news_item):
+        pro_news = News.objects.create(
+            title='Pro News',
+            subtitle='Pro Subtitle',
+            content='Pro Content',
+            author=news_item.author,
+            vertical=news_item.vertical,
+            access_type='PRO',
+            is_pro=True
+        )
+
+        api_client.force_authenticate(user=regular_user)
+        response = api_client.get(reverse('news-list'))
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 1
+
+        api_client.force_authenticate(user=pro_user)
+        response = api_client.get(reverse('news-list'))
+        assert response.status_code == status.HTTP_200_OK
+        assert len(response.data['results']) == 2 

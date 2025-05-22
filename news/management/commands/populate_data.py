@@ -72,6 +72,7 @@ class Command(BaseCommand):
                 'password': 'admin123',
                 'is_staff': True,
                 'is_superuser': True,
+                'user_type': 'ADMIN',
                 'plan': Plan.objects.get(name='Premium')
             },
             {
@@ -79,18 +80,21 @@ class Command(BaseCommand):
                 'email': 'editor@jota.com',
                 'password': 'editor123',
                 'is_staff': True,
+                'user_type': 'EDITOR',
                 'plan': Plan.objects.get(name='Premium')
             },
             {
                 'username': 'usuario_basico',
                 'email': 'basico@jota.com',
                 'password': 'basico123',
+                'user_type': 'READER',
                 'plan': Plan.objects.get(name='Básico')
             },
             {
                 'username': 'usuario_premium',
                 'email': 'premium@jota.com',
                 'password': 'premium123',
+                'user_type': 'READER',
                 'plan': Plan.objects.get(name='Premium')
             }
         ]
@@ -102,7 +106,8 @@ class Command(BaseCommand):
                     'email': usuario_data['email'],
                     'is_staff': usuario_data.get('is_staff', False),
                     'is_superuser': usuario_data.get('is_superuser', False),
-                    'plan': usuario_data['plan']
+                    'plan': usuario_data['plan'],
+                    'user_type': usuario_data['user_type']
                 }
             )
             if created:

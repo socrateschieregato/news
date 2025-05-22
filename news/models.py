@@ -17,7 +17,6 @@ class News(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='news')
     vertical = models.ForeignKey(Vertical, on_delete=models.CASCADE, related_name='news')
     access_type = models.CharField(max_length=6, choices=ACCESS_TYPES, default='PUBLIC')
-    is_pro = models.BooleanField(default=False)
     publish_date = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -31,16 +30,6 @@ class News(models.Model):
 
     def unpublish(self):
         self.access_type = 'PRO'
-        self.save()
-
-    def make_pro(self):
-        self.access_type = 'PRO'
-        self.is_pro = True
-        self.save()
-
-    def make_public(self):
-        self.access_type = 'PUBLIC'
-        self.is_pro = False
         self.save()
 
     class Meta:
