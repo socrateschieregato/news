@@ -4,7 +4,6 @@ from . import views
 
 router = DefaultRouter()
 router.register(r'news', views.NewsViewSet)
-router.register(r'categories', views.CategoryViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
