@@ -17,6 +17,6 @@ class NewsSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'subtitle', 'content', 'image',
             'author', 'vertical', 'vertical_id', 'access_type',
-            'is_pro', 'publish_date', 'created_at', 'updated_at'
+            'status', 'publish_date', 'created_at', 'updated_at'
         ]
         read_only_fields = ['author', 'created_at', 'updated_at'] 

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -123,6 +124,14 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Celery Beat Settings
+CELERY_BEAT_SCHEDULE = {
+    'publish-scheduled-news': {
+        'task': 'news.tasks.publish_scheduled_news',
+        'schedule': crontab(minute='*'),
+    },
+}
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

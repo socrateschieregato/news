@@ -43,12 +43,6 @@ class Command(BaseCommand):
                 'description': 'Acesso completo a todo conteúdo',
                 'price': 29.90,
                 'plan_type': 'PRO'
-            },
-            {
-                'name': 'Personalizado',
-                'description': 'Acesso a verticais específicas',
-                'price': 19.90,
-                'plan_type': 'PRO'
             }
         ]
 
@@ -123,7 +117,7 @@ class Command(BaseCommand):
                 'content': 'O Senado aprovou hoje a Reforma Tributária...',
                 'vertical': Vertical.objects.get(name='Tributos'),
                 'access_type': 'PUBLIC',
-                'is_pro': False,
+                'status': 'PUBLISHED',
                 'author': User.objects.get(username='editor')
             },
             {
@@ -132,7 +126,7 @@ class Command(BaseCommand):
                 'content': 'O novo ministro da Saúde tomou posse hoje...',
                 'vertical': Vertical.objects.get(name='Saúde'),
                 'access_type': 'PRO',
-                'is_pro': True,
+                'status': 'PUBLISHED',
                 'author': User.objects.get(username='editor')
             },
             {
@@ -141,7 +135,7 @@ class Command(BaseCommand):
                 'content': 'Os preços da energia elétrica subiram em média...',
                 'vertical': Vertical.objects.get(name='Energia'),
                 'access_type': 'PUBLIC',
-                'is_pro': False,
+                'status': 'PUBLISHED',
                 'author': User.objects.get(username='editor')
             },
             {
@@ -150,7 +144,7 @@ class Command(BaseCommand):
                 'content': 'O Supremo Tribunal Federal decidiu hoje sobre...',
                 'vertical': Vertical.objects.get(name='Trabalhista'),
                 'access_type': 'PRO',
-                'is_pro': True,
+                'status': 'PUBLISHED',
                 'author': User.objects.get(username='editor')
             }
         ]
@@ -163,7 +157,7 @@ class Command(BaseCommand):
                     'content': noticia_data['content'],
                     'vertical': noticia_data['vertical'],
                     'access_type': noticia_data['access_type'],
-                    'is_pro': noticia_data['is_pro'],
+                    'status': noticia_data['status'],
                     'author': noticia_data['author'],
                     'publish_date': timezone.now()
                 }

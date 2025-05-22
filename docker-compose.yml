@@ -46,6 +46,17 @@ services:
       - web
       - redis
 
+  celery-beat:
+    image: ghcr.io/socrateschieregato/news:latest
+    command: celery -A jota_news beat -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+
 volumes:
   postgres_data:
   static_volume:

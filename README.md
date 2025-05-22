@@ -132,7 +132,7 @@ celery -A jota_news worker -l info
 - Relacionamentos: news (ForeignKey reversa de News)
 
 ### Notícia
-- Campos: id, title, subtitle, content, image, author, category, vertical, access_type, is_pro, publish_date, created_at, updated_at
+- Campos: id, title, subtitle, content, image, author, category, vertical, access_type, status, publish_date, created_at, updated_at
 - Relacionamentos: author (ForeignKey para User), category (ForeignKey para Category), vertical (ForeignKey para Vertical)
 
 ### Categoria
