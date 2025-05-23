@@ -21,6 +21,9 @@ class TestNewsAPI:
         assert len(response.data['results']) == 1
 
     def test_create_news_editor(self, api_client, editor_user, vertical):
+        # Garante que o editor tem acesso à vertical
+        editor_user.plan.verticais.add(vertical)
+        
         api_client.force_authenticate(user=editor_user)
         url = reverse('news-list')
         data = {
@@ -36,6 +39,9 @@ class TestNewsAPI:
         assert News.objects.first().author == editor_user
 
     def test_create_news_regular_user(self, api_client, regular_user, vertical):
+        # Garante que o usuário regular tem acesso à vertical
+        regular_user.plan.verticais.add(vertical)
+        
         api_client.force_authenticate(user=regular_user)
         url = reverse('news-list')
         data = {
@@ -48,7 +54,27 @@ class TestNewsAPI:
         response = api_client.post(url, data)
         assert response.status_code == status.HTTP_403_FORBIDDEN
 
+    def test_create_news_without_vertical_access(self, api_client, editor_user, vertical):
+        # Remove a vertical do plano do editor
+        editor_user.plan.verticais.remove(vertical)
+        
+        api_client.force_authenticate(user=editor_user)
+        url = reverse('news-list')
+        data = {
+            'title': 'Test News',
+            'subtitle': 'Test Subtitle',
+            'content': 'Test Content',
+            'access_type': 'PUBLIC',
+            'vertical_id': vertical.id
+        }
+        response = api_client.post(url, data)
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert response.data['detail'] == "Seu plano não tem acesso a esta vertical."
+
     def test_publish_news(self, api_client, editor_user, news_item):
+        # Garante que o editor tem acesso à vertical
+        editor_user.plan.verticais.add(news_item.vertical)
+        
         news_item.author = editor_user
         news_item.save()
         api_client.force_authenticate(user=editor_user)
@@ -59,6 +85,9 @@ class TestNewsAPI:
         assert news_item.status == 'PUBLISHED'
 
     def test_schedule_news(self, api_client, editor_user, news_item):
+        # Garante que o editor tem acesso à vertical
+        editor_user.plan.verticais.add(news_item.vertical)
+        
         news_item.author = editor_user
         news_item.save()
         api_client.force_authenticate(user=editor_user)
@@ -72,6 +101,9 @@ class TestNewsAPI:
         assert news_item.status == 'SCHEDULED'
 
     def test_access_pro_content(self, api_client, pro_user, news_item):
+        # Garante que o usuário PRO tem acesso à vertical
+        pro_user.plan.verticais.add(news_item.vertical)
+        
         news_item.access_type = 'PRO'
         news_item.publish()
         news_item.save()
@@ -82,6 +114,9 @@ class TestNewsAPI:
         assert response.status_code == status.HTTP_200_OK
 
     def test_access_pro_content_regular_user(self, api_client, regular_user, news_item):
+        # Garante que o usuário regular tem acesso à vertical
+        regular_user.plan.verticais.add(news_item.vertical)
+        
         news_item.access_type = 'PRO'
         news_item.save()
         
@@ -91,6 +126,9 @@ class TestNewsAPI:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
     def test_update_own_news(self, api_client, editor_user, news_item):
+        # Garante que o editor tem acesso à vertical
+        editor_user.plan.verticais.add(news_item.vertical)
+        
         news_item.author = editor_user
         news_item.save()
         api_client.force_authenticate(user=editor_user)
@@ -143,6 +181,9 @@ class TestNewsAPI:
         assert News.objects.count() == 1
 
     def test_list_news_with_pro_content(self, api_client, regular_user, pro_user, news_item):
+        # Garante que o usuário PRO tem acesso à vertical
+        pro_user.plan.verticais.add(news_item.vertical)
+        
         news_item.publish()
         news_item.save()
         pro_news = News.objects.create(

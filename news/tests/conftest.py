@@ -8,6 +8,22 @@ from factory import Faker, SubFactory
 
 User = get_user_model()
 
+class PlanFactory(DjangoModelFactory):
+    class Meta:
+        model = Plan
+
+    name = Faker('word')
+    description = Faker('text')
+    price = Faker('pydecimal', left_digits=3, right_digits=2, positive=True)
+    plan_type = 'INFO'
+
+class VerticalFactory(DjangoModelFactory):
+    class Meta:
+        model = Vertical
+
+    name = Faker('word')
+    description = Faker('text')
+
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
@@ -16,22 +32,7 @@ class UserFactory(DjangoModelFactory):
     email = Faker('email')
     password = Faker('password')
     user_type = 'READER'
-
-class PlanFactory(DjangoModelFactory):
-    class Meta:
-        model = Plan
-
-    name = Faker('word')
-    plan_type = 'INFO'
-    description = Faker('text')
-    price = 0
-
-class VerticalFactory(DjangoModelFactory):
-    class Meta:
-        model = Vertical
-
-    name = Faker('word')
-    description = Faker('text')
+    plan = SubFactory(PlanFactory)
 
 class NewsFactory(DjangoModelFactory):
     class Meta:
@@ -50,15 +51,18 @@ def api_client():
 
 @pytest.fixture
 def admin_user():
-    return UserFactory(user_type='ADMIN', is_staff=True, is_superuser=True)
+    plan = PlanFactory(plan_type='PRO')
+    return UserFactory(user_type='ADMIN', is_staff=True, is_superuser=True, plan=plan)
 
 @pytest.fixture
 def editor_user():
-    return UserFactory(user_type='EDITOR', is_staff=True)
+    plan = PlanFactory(plan_type='PRO')
+    return UserFactory(user_type='EDITOR', is_staff=True, plan=plan)
 
 @pytest.fixture
 def regular_user():
-    return UserFactory(user_type='READER')
+    plan = PlanFactory(plan_type='INFO')
+    return UserFactory(user_type='READER', plan=plan)
 
 @pytest.fixture
 def pro_user():

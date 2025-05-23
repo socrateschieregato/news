@@ -56,6 +56,14 @@ class NewsViewSet(viewsets.ModelViewSet):
         return obj
 
     def perform_create(self, serializer):
+        # Verifica se o usuário tem acesso à vertical
+        vertical = serializer.validated_data.get('vertical')
+        user = self.request.user
+        
+        # Se o usuário não tem plano ou o plano não tem acesso à vertical
+        if not user.plan or not user.can_access_vertical(vertical):
+            raise PermissionDenied("Seu plano não tem acesso a esta vertical.")
+            
         serializer.save(author=self.request.user)
 
     @action(detail=True, methods=['post'])
