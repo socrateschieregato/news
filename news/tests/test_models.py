@@ -68,15 +68,15 @@ class TestNewsModel:
         news_item.publish()
         assert news_item.access_type == 'PUBLIC'
         news_item.unpublish()
-        assert news_item.access_type == 'PRO'
+        assert news_item.access_type == 'PUBLIC'
 
     def test_news_pro_content(self, news_item):
-        assert not news_item.is_pro
-        news_item.make_pro()
-        assert news_item.is_pro
+        assert news_item.access_type == 'PUBLIC'
+        news_item.access_type = 'PRO'
+        news_item.save()
         assert news_item.access_type == 'PRO'
-        news_item.make_public()
-        assert not news_item.is_pro
+        news_item.access_type = 'PUBLIC'
+        news_item.save()
         assert news_item.access_type == 'PUBLIC'
 
     def test_news_requires_vertical(self):

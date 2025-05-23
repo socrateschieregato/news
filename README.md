@@ -65,9 +65,14 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
-### Iniciar o Celery (em outro terminal)
+### Iniciar o Celery Worker (em outro terminal)
 ```bash
 celery -A jota_news worker -l info
+```
+
+### Iniciar o Celery Beat (em outro terminal)
+```bash
+celery -A jota_news beat -l info
 ```
 
 ## Acessando a API
@@ -97,11 +102,11 @@ celery -A jota_news worker -l info
 - DELETE `/api/plans/{id}/` - Deletar plano
 
 ### Verticais
-- GET `/api/verticais/` - Listar verticais
-- POST `/api/verticais/` - Criar vertical
-- GET `/api/verticais/{id}/` - Detalhes da vertical
-- PUT `/api/verticais/{id}/` - Atualizar vertical
-- DELETE `/api/verticais/{id}/` - Deletar vertical
+- GET `/api/verticals/` - Listar verticais
+- POST `/api/verticals/` - Criar vertical
+- GET `/api/verticals/{id}/` - Detalhes da vertical
+- PUT `/api/verticals/{id}/` - Atualizar vertical
+- DELETE `/api/verticals/{id}/` - Deletar vertical
 
 ### Notícias
 - GET `/api/news/` - Listar notícias
@@ -109,35 +114,26 @@ celery -A jota_news worker -l info
 - GET `/api/news/{id}/` - Detalhes da notícia
 - PUT `/api/news/{id}/` - Atualizar notícia
 - DELETE `/api/news/{id}/` - Deletar notícia
-
-### Categorias
-- GET `/api/categories/` - Listar categorias
-- POST `/api/categories/` - Criar categoria
-- GET `/api/categories/{id}/` - Detalhes da categoria
-- PUT `/api/categories/{id}/` - Atualizar categoria
-- DELETE `/api/categories/{id}/` - Deletar categoria
+- POST `/api/news/{id}/publish/` - Publicar notícia
+- POST `/api/news/{id}/schedule/` - Agendar publicação
 
 ## Modelos de Dados
 
 ### Usuário
-- Campos: id, username, email, password, plan, is_active, date_joined
+- Campos: id, username, email, password, plan, user_type, is_active, date_joined
 - Relacionamentos: plan (ForeignKey para Plan)
 
 ### Plano
-- Campos: id, name, description, price, features, verticais
-- Relacionamentos: verticais (ManyToMany para Vertical)
+- Campos: id, name, description, price, plan_type
+- Relacionamentos: users (ForeignKey reversa de User)
 
 ### Vertical
-- Campos: id, name, description, slug
+- Campos: id, name, description
 - Relacionamentos: news (ForeignKey reversa de News)
 
 ### Notícia
-- Campos: id, title, subtitle, content, image, author, category, vertical, access_type, status, publish_date, created_at, updated_at
-- Relacionamentos: author (ForeignKey para User), category (ForeignKey para Category), vertical (ForeignKey para Vertical)
-
-### Categoria
-- Campos: id, name, slug, vertical, description, created_at, updated_at
-- Relacionamentos: vertical (CharField com choices)
+- Campos: id, title, subtitle, content, image, author, vertical, access_type, status, publish_date, created_at, updated_at
+- Relacionamentos: author (ForeignKey para User), vertical (ForeignKey para Vertical)
 
 ## Testes
 
@@ -155,11 +151,11 @@ pytest --cov
 
 ```
 jota_news/
-├── .github/            # Configurações do GitHub (CI/CD, workflows)
 ├── jota_news/          # Configurações do projeto Django
 │   ├── __init__.py
 │   ├── settings.py     # Configurações do projeto
 │   ├── urls.py         # URLs principais
+│   ├── celery.py       # Configuração do Celery
 │   ├── asgi.py         # Configuração ASGI
 │   └── wsgi.py         # Configuração WSGI
 ├── news/               # App de notícias
@@ -168,6 +164,7 @@ jota_news/
 │   ├── apps.py         # Configuração do app
 │   ├── models.py       # Modelos de dados
 │   ├── serializers.py  # Serializers da API
+│   ├── tasks.py        # Tarefas Celery
 │   ├── tests/          # Testes do app
 │   ├── urls.py         # URLs do app
 │   └── views.py        # Views da API
@@ -195,13 +192,15 @@ jota_news/
 
 ## Funcionalidades
 
-- CRUD completo de notícias, categorias, usuários, planos e verticais
+- CRUD completo de notícias, usuários, planos e verticais
 - Autenticação via JWT
 - Permissões baseadas em roles (editor, autor, leitor)
 - Conteúdo PRO para assinantes
-- Agendamento de publicações
+- Agendamento de publicações com Celery
 - Categorização de notícias por vertical
 - Upload de imagens
 - Documentação automática com Swagger/OpenAPI
 - Sistema de planos de assinatura
 - Gerenciamento de verticais de conteúdo
+- Tarefas assíncronas com Celery
+- Agendamento automático de publicações

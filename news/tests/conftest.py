@@ -43,7 +43,6 @@ class NewsFactory(DjangoModelFactory):
     author = SubFactory(UserFactory)
     vertical = SubFactory(VerticalFactory)
     access_type = 'PUBLIC'
-    is_pro = False
 
 @pytest.fixture
 def api_client():
