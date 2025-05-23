@@ -4,7 +4,11 @@ services:
   web:
     image: ghcr.io/socrateschieregato/news:latest
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             python manage.py populate_data &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/app
       - static_volume:/app/staticfiles
@@ -18,11 +22,13 @@ services:
       - redis
 
   db:
-    image: postgres:15
+    image: postgres:13
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
       - .env
+    ports:
+      - "5432:5432"
 
   redis:
     image: redis:7
@@ -32,6 +38,17 @@ services:
   celery:
     image: ghcr.io/socrateschieregato/news:latest
     command: celery -A jota_news worker -l info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - web
+      - redis
+
+  celery-beat:
+    image: ghcr.io/socrateschieregato/news:latest
+    command: celery -A jota_news beat -l info
     volumes:
       - .:/app
     env_file:

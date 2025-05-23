@@ -1,0 +1,6 @@
+[run]
+omit =
+    manage.py
+    jota_news/wsgi.py
+    jota_news/asgi.py
+    news/management/commands/populate_data.py 

@@ -1,25 +1,22 @@
 from rest_framework import serializers
-from .models import News, Category
-
-class CategorySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Category
-        fields = ['id', 'name', 'slug', 'vertical']
+from .models import News
+from users.serializers import VerticalSerializer
+from users.models import Vertical
 
 class NewsSerializer(serializers.ModelSerializer):
     author = serializers.ReadOnlyField(source='author.username')
-    category = CategorySerializer(read_only=True)
-    category_id = serializers.PrimaryKeyRelatedField(
-        queryset=Category.objects.all(),
+    vertical = VerticalSerializer(read_only=True)
+    vertical_id = serializers.PrimaryKeyRelatedField(
+        queryset=Vertical.objects.all(),
         write_only=True,
-        source='category'
+        source='vertical'
     )
 
     class Meta:
         model = News
         fields = [
             'id', 'title', 'subtitle', 'content', 'image',
-            'author', 'category', 'category_id', 'status',
-            'is_pro', 'publish_date', 'created_at', 'updated_at'
+            'author', 'vertical', 'vertical_id', 'access_type',
+            'status', 'publish_date', 'created_at', 'updated_at'
         ]
         read_only_fields = ['author', 'created_at', 'updated_at'] 
