@@ -41,13 +41,13 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Tag and push Docker image
         run: |
-          docker tag jota_news:latest ghcr.io/${{ github.repository }}:latest
-          docker push ghcr.io/${{ github.repository }}:latest
+          docker tag jota_news:latest ghcr.io/${{ github.repository_owner }}/news:latest
+          docker push ghcr.io/${{ github.repository_owner }}/news:latest
           
       - name: Create deployment package
         run: |
